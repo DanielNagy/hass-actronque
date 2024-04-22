@@ -1515,7 +1515,8 @@ namespace HMX.HASSActronQue
 							if (!_bSeparateHeatCool) // Default
 								MQTT.SendMessage(string.Format("homeassistant/climate/actronque{0}/zone{1}/config", strHANameModifier, iZone), "{{\"name\":\"{0} {3}\",\"unique_id\":\"{2}-z{1}ac\",\"device\":{{\"identifiers\":[\"{2}\"],\"name\":\"{4}\",\"model\":\"Add-On\",\"manufacturer\":\"ActronAir\"}},\"modes\":[\"off\",\"auto\",\"cool\",\"fan_only\",\"heat\"],\"mode_command_topic\":\"actronque{5}/zone{1}/mode/set\",\"temperature_command_topic\":\"actronque{5}/zone{1}/temperature/set\",\"min_temp\":\"12\",\"max_temp\":\"30\",\"temp_step\":\"0.5\",\"temperature_state_topic\":\"actronque{5}/zone{1}/settemperature\",\"mode_state_topic\":\"actronque{5}/zone{1}/mode\",\"current_temperature_topic\":\"actronque{5}/zone{1}/temperature\",\"availability_topic\":\"{2}/status\"}}", zone.Name, iZone, Service.ServiceName.ToLower() + strDeviceNameModifier, strAirConditionerName, strAirConditionerNameMQTT, unit.Serial);
 							else
-								MQTT.SendMessage(string.Format("homeassistant/climate/actronque{0}/zone{1}/config", strHANameModifier, iZone), "{{\"name\":\"{0} {3}\",\"unique_id\":\"{2}-z{1}ac\",\"device\":{{\"identifiers\":[\"{2}\"],\"name\":\"{4}\",\"model\":\"Add-On\",\"manufacturer\":\"ActronAir\"}},\"modes\":[\"off\",\"auto\",\"cool\",\"fan_only\",\"heat\"],\"mode_command_topic\":\"actronque{5}/zone{1}/mode/set\",\"temperature_high_command_topic\":\"actronque{5}/zone{1}/temperature/high/set\",\"temperature_low_command_topic\":\"actronque{5}/zone{1}/temperature/low/set\",\"min_temp\":\"12\",\"max_temp\":\"30\",\"temp_step\":\"0.5\",\"temperature_high_state_topic\":\"actronque{5}/zone{1}/settemperature/high\",\"temperature_low_state_topic\":\"actronque{5}/zone{1}/settemperature/low\",\"mode_state_topic\":\"actronque{5}/zone{1}/mode\",\"current_temperature_topic\":\"actronque{5}/zone{1}/temperature\",\"availability_topic\":\"{2}/status\"}}", zone.Name, iZone, Service.ServiceName.ToLower() + strDeviceNameModifier, strAirConditionerName, strAirConditionerNameMQTT, unit.Serial);
+								//MQTT.SendMessage(string.Format("homeassistant/climate/actronque{0}/zone{1}/config", strHANameModifier, iZone), "{{\"name\":\"{0} {3}\",\"unique_id\":\"{2}-z{1}ac\",\"device\":{{\"identifiers\":[\"{2}\"],\"name\":\"{4}\",\"model\":\"Add-On\",\"manufacturer\":\"ActronAir\"}},\"modes\":[\"off\",\"auto\",\"cool\",\"fan_only\",\"heat\"],\"mode_command_topic\":\"actronque{5}/zone{1}/mode/set\",\"temperature_high_command_topic\":\"actronque{5}/zone{1}/temperature/high/set\",\"temperature_low_command_topic\":\"actronque{5}/zone{1}/temperature/low/set\",\"min_temp\":\"12\",\"max_temp\":\"30\",\"temp_step\":\"0.5\",\"temperature_high_state_topic\":\"actronque{5}/zone{1}/settemperature/high\",\"temperature_low_state_topic\":\"actronque{5}/zone{1}/settemperature/low\",\"mode_state_topic\":\"actronque{5}/zone{1}/mode\",\"current_temperature_topic\":\"actronque{5}/zone{1}/temperature\",\"availability_topic\":\"{2}/status\"}}", zone.Name, iZone, Service.ServiceName.ToLower() + strDeviceNameModifier, strAirConditionerName, strAirConditionerNameMQTT, unit.Serial);
+								MQTT.SendMessage(string.Format("homeassistant/climate/actronque{0}/zone{1}/config", strHANameModifier, iZone), "{{\"name\":\"{0} {3}\",\"unique_id\":\"{2}-z{1}ac\",\"device\":{{\"identifiers\":[\"{2}\"],\"name\":\"{4}\",\"model\":\"Add-On\",\"manufacturer\":\"ActronAir\"}},\"modes\":[\"off\",\"auto\",\"cool\",\"fan_only\",\"heat\"],\"mode_command_topic\":\"actronque{5}/zone{1}/mode/set\",\"temperature_high_command_topic\":\"actronque{5}/zone{1}/temperature/high/set\",\"temperature_low_command_topic\":\"actronque{5}/zone{1}/temperature/low/set\",\"min_temp\":\"12\",\"max_temp\":\"30\",\"temp_step\":\"0.5\",\"temperature_high_state_topic\":\"actronque{5}/zone{1}/settemperature/high\",\"temperature_low_state_topic\":\"actronque{5}/zone{1}/settemperature/low\",\"mode_state_topic\":\"actronque{5}/zone{1}/mode\",\"action_topic\":\"actronque{5}/zone{1}/action\",\"current_temperature_topic\":\"actronque{5}/zone{1}/temperature\",\"availability_topic\":\"{2}/status\"}}", zone.Name, iZone, Service.ServiceName.ToLower() + strDeviceNameModifier, strAirConditionerName, strAirConditionerNameMQTT, unit.Serial);
 
 							MQTT.Subscribe("actronque{0}/zone{1}/temperature/set", unit.Serial, iZone);
 							MQTT.Subscribe("actronque{0}/zone{1}/temperature/high/set", unit.Serial, iZone);
@@ -1708,7 +1709,7 @@ namespace HMX.HASSActronQue
 					// HVAC Action based on Compressor State and Capacity (Que doesnt appear to show "IDLE" whilst in AUTO mode)
 					if (unit.Data.CompressorCapacity != 0)
 					{
-						// Que Master screen only shows Heating / Cooling / Standby whilst in Auto mode
+						// Que Compressor State only shows Heating / Cooling
 						switch (unit.Data.CompressorState)
 						{
 							case "HEAT":
@@ -1764,6 +1765,20 @@ namespace HMX.HASSActronQue
 					MQTT.SendMessage(string.Format("actronque{0}/zone{1}", unit.Serial, iIndex), unit.Zones[iIndex].State ? "ON" : "OFF");
 					MQTT.SendMessage(string.Format("actronque{0}/zone{1}/temperature", unit.Serial, iIndex), unit.Zones[iIndex].Temperature.ToString("N1"));
 					MQTT.SendMessage(string.Format("actronque{0}/zone{1}/position", unit.Serial, iIndex), (unit.Zones[iIndex].Position * 5).ToString()); // 0-20 numeric displayed as 0-100 percentage
+
+
+					if (unit.Zones[iIndex].Position != 0)
+					{
+						MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), unit.Data.CompressorState);
+					}
+					else
+					{
+						if (unit.Zones[iIndex].State)
+							MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), "idle");
+						else
+							MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), "off");
+					}
+
 
 					// Per Zone Controls
 					if (_bPerZoneControls)
