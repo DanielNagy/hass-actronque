@@ -170,7 +170,7 @@ namespace HMX.HASSActronQue
 						{
 							Logging.WriteDebugLogError("Que.Initialise()", eException, "Unable to update json file.");
 						}
-					}					
+					}
 				}
 			}
 			catch (Exception eException)
@@ -514,7 +514,7 @@ namespace HMX.HASSActronQue
 					if (!strResponse.Contains("acsystem"))
 					{
 						Logging.WriteDebugLog("Que.GetAirConditionerSerial() [0x{0}] No data returned from Que service - check Que user name and password.");
-						
+
 						bRetVal = false;
 						goto Cleanup;
 					}
@@ -779,7 +779,7 @@ namespace HMX.HASSActronQue
 		Cleanup:
 			cancellationToken?.Dispose();
 			httpResponse?.Dispose();
-			
+
 
 			return updateItems;
 		}
@@ -789,7 +789,7 @@ namespace HMX.HASSActronQue
 			JArray aEnabledZones;
 
 			Logging.WriteDebugLog("Que.ProcessFullStatus() [0x{0}] Unit: {1}", lRequestId.ToString("X8"), unit.Serial);
-		
+
 			// Compressor Mode
 			ProcessPartialStatus(lRequestId, "LiveAircon.CompressorMode", jsonResponse.LiveAircon.CompressorMode?.ToString(), ref unit.Data.CompressorState);
 
@@ -1198,7 +1198,7 @@ namespace HMX.HASSActronQue
 			httpResponse?.Dispose();
 
 			if (!bRetVal)
-				unit.NextEventURL = "";			
+				unit.NextEventURL = "";
 
 			return updateItems;
 		}
@@ -1567,7 +1567,7 @@ namespace HMX.HASSActronQue
 				MQTT.Subscribe("actronque{0}/temperature/low/set", unit.Serial);
 
 				iDeviceIndex++;
-			}		
+			}
 		}
 
 		private static void MQTTUpdateData(AirConditionerUnit unit, UpdateItems items)
@@ -1703,6 +1703,41 @@ namespace HMX.HASSActronQue
 				{
 					// Compressor Capacity
 					MQTT.SendMessage(string.Format("actronque{0}/compressorcapacity", unit.Serial), unit.Data.CompressorCapacity.ToString("F1"));
+
+
+					// HVAC Action based on Compressor State and Capacity (Que doesnt appear to show "IDLE" whilst in AUTO mode)
+					if (unit.Data.CompressorCapacity != 0)
+					{
+						// Que Master screen only shows Heating / Cooling / Standby whilst in Auto mode
+						switch (unit.Data.CompressorState)
+						{
+							case "HEAT":
+								MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "heating");
+								break;
+
+							case "COOL":
+								MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "cooling");
+								break;
+
+							case "IDLE": // Never actually seen IDLE whilst in AUTO state. Leaving this code just incase for now.
+								if (unit.Data.On)
+									MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "idle");
+								else
+									MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "off");
+								break;
+						}
+					}
+					else
+					{ // Standby on que master screen. api compressorstate does not show standby. 
+						if (unit.Data.On)
+							MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "idle");
+						else
+							MQTT.SendMessage(string.Format("actronque{0}/action", unit.Serial), "off");
+					}
+
+
+
+
 
 					// Compressor Power
 					MQTT.SendMessage(string.Format("actronque{0}/compressorpower", unit.Serial), unit.Data.CompressorPower.ToString("F2"));
@@ -1936,7 +1971,7 @@ namespace HMX.HASSActronQue
 
 		public static void ChangeFanMode(long lRequestId, AirConditionerUnit unit, FanMode fanMode)
 		{
-			QueueCommand command = new QueueCommand(lRequestId, unit,DateTime.Now.AddSeconds(_iCommandExpiry));
+			QueueCommand command = new QueueCommand(lRequestId, unit, DateTime.Now.AddSeconds(_iCommandExpiry));
 
 			Logging.WriteDebugLog("Que.ChangeFanMode() [0x{0}] Unit: {1}, Fan Mode: {2}", lRequestId.ToString("X8"), unit.Serial, fanMode.ToString());
 
@@ -2018,8 +2053,8 @@ namespace HMX.HASSActronQue
 				case TemperatureSetType.High:
 					command.Data.command.Add(string.Format("{0}.TemperatureSetpoint_Cool_oC", strCommandPrefix), dblTemperature);
 
-					break;							
-			}	
+					break;
+			}
 
 			command.Data.command.Add("type", "set-settings");
 
