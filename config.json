@@ -6,12 +6,11 @@
   "url": "https://github.com/DanielNagy/hass-actronque",
   "startup": "application",
   "boot": "auto",
-  "image": "DanielNagy/hass-actronque-{arch}",
-  "arch": [
-    "amd64",
-    "aarch64",
-		"armv7"
-  ],
+  "build-from": {
+    "amd64": "Dockerfile",
+    "aarch64": "Dockerfile",
+    "armv7": "Dockerfile"
+  },
 	"options": {
 		"MQTTUser": "",
 		"MQTTPassword": "",
