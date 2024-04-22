@@ -1770,6 +1770,16 @@ namespace HMX.HASSActronQue
 					if (unit.Zones[iIndex].Position != 0)
 					{
 						MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), unit.Data.CompressorState);
+						switch (unit.Data.CompressorState)
+						{
+							case "HEAT":
+								MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), "heating");
+								break;
+
+							case "COOL":
+								MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), "cooling");
+								break;
+						}
 					}
 					else
 					{
