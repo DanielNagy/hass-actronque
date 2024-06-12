@@ -1766,8 +1766,8 @@ namespace HMX.HASSActronQue
 					MQTT.SendMessage(string.Format("actronque{0}/zone{1}/temperature", unit.Serial, iIndex), unit.Zones[iIndex].Temperature.ToString("N1"));
 					MQTT.SendMessage(string.Format("actronque{0}/zone{1}/position", unit.Serial, iIndex), (unit.Zones[iIndex].Position * 5).ToString()); // 0-20 numeric displayed as 0-100 percentage
 
-
-					if (unit.Zones[iIndex].Position != 0)
+					// set zone action based on position. Note, when entire unit is idle, all zone positions become 100.
+					if (unit.Zones[iIndex].Position != 0 && unit.Data.CompressorPower >= 0)
 					{
 						MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), unit.Data.CompressorState);
 						switch (unit.Data.CompressorState)
