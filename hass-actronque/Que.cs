@@ -1769,7 +1769,7 @@ namespace HMX.HASSActronQue
 					// set zone action based on position. Note, when entire unit is idle, all zone positions become 100.
 					if (unit.Zones[iIndex].Position != 0 && unit.Data.CompressorPower >= 0)
 					{
-						MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), unit.Data.CompressorState);
+						// MQTT.SendMessage(string.Format("actronque{0}/zone{1}/action", unit.Serial, iIndex), unit.Data.CompressorState);
 						switch (unit.Data.CompressorState)
 						{
 							case "HEAT":

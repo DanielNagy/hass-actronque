@@ -1,6 +1,6 @@
 {
   "name": "beta: Actron Que/Neo Air Conditioner",
-  "version": "2023.12.1b2",
+  "version": "2023.12.1b3",
   "slug": "hass-actronque-beta",
   "description": "An add-on for Actron Air Conditioners using the Actron Que or Neo modules.",
   "url": "https://github.com/DanielNagy/hass-actronque",
