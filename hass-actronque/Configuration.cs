@@ -18,18 +18,23 @@ namespace HMX.HASSActronQue
 			return GetConfiguration(configuration, strVariable, out bConfiguration, false, true);
 		}
 
+		public static bool GetOptionalConfiguration(IConfigurationRoot configuration, string strVariable, out bool bConfiguration, bool bDefault)
+		{
+			return GetConfiguration(configuration, strVariable, out bConfiguration, false, true, bDefault);
+		}
+
 		public static bool GetPrivateConfiguration(IConfigurationRoot configuration, string strVariable, out bool bConfiguration)
 		{
 			return GetConfiguration(configuration, strVariable, out bConfiguration, true, false);
 		}
 
-		private static bool GetConfiguration(IConfigurationRoot configuration, string strVariable, out bool bConfiguration, bool bPrivate, bool bOptional)
+		private static bool GetConfiguration(IConfigurationRoot configuration, string strVariable, out bool bConfiguration, bool bPrivate, bool bOptional, bool bDefault = false)
 		{
 			string strTemp;
 
 			Logging.WriteDebugLog("Configuration.GetConfiguration() Read {0}", strVariable);
 
-			bConfiguration = false;
+			bConfiguration = bDefault;
 
 			if ((configuration[strVariable] ?? "") != "")
 			{
@@ -122,7 +127,7 @@ namespace HMX.HASSActronQue
 		public static bool GetPrivateConfiguration(IConfigurationRoot configuration, string strVariable, out int iConfiguration)
 		{
 			return GetConfiguration(configuration, strVariable, out iConfiguration, true);
-		}		
+		}
 
 		private static bool GetConfiguration(IConfigurationRoot configuration, string strVariable, out int iConfiguration, bool bPrivate)
 		{

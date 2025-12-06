@@ -29,15 +29,14 @@ namespace HMX.HASSActronQue
 			get { return _strDeviceNameMQTT; }
 		}
 
-
 		public static void Start()
-        {
+		{
 			IConfigurationRoot configuration;
 			IHost webHost;
 			string strMQTTUser, strMQTTPassword, strMQTTBroker;
-			string strQueUser, strQuePassword, strQueSerial, strSystemType;
+			string strQueUser, strQuePassword, strQueSerial;
 			int iPollInterval;
-			bool bPerZoneControls, bPerZoneSensors, bMQTTTLS, bSeparateHeatCool;
+			bool bPerZoneControls, bQueLogging, bMQTTLogging, bMQTTTLS, bSeparateHeatCool;
 
 			Logging.WriteDebugLog("Service.Start() Build Date: {0}", Properties.Resources.BuildDate);
 
@@ -63,12 +62,11 @@ namespace HMX.HASSActronQue
 			Configuration.GetPrivateOptionalConfiguration(configuration, "MQTTPassword", out strMQTTPassword);
 			if (!Configuration.GetConfiguration(configuration, "MQTTBroker", out strMQTTBroker))
 				return;
+			Configuration.GetOptionalConfiguration(configuration, "MQTTLogs", out bMQTTLogging, true);
 			Configuration.GetOptionalConfiguration(configuration, "MQTTTLS", out bMQTTTLS);
 
 			if (!Configuration.GetConfiguration(configuration, "PerZoneControls", out bPerZoneControls))
 				return;
-
-			Configuration.GetOptionalConfiguration(configuration, "PerZoneSensors", out bPerZoneSensors);		
 
 			if (!Configuration.GetConfiguration(configuration, "PollInterval", out iPollInterval) || iPollInterval < 10 || iPollInterval > 300)
 			{
@@ -80,25 +78,10 @@ namespace HMX.HASSActronQue
 				return;
 			if (!Configuration.GetPrivateConfiguration(configuration, "QuePassword", out strQuePassword))
 				return;
+			Configuration.GetOptionalConfiguration(configuration, "QueLogs", out bQueLogging, true);
 			Configuration.GetOptionalConfiguration(configuration, "QueSerial", out strQueSerial);
 
 			Configuration.GetOptionalConfiguration(configuration, "SeparateHeatCoolTargets", out bSeparateHeatCool);
-
-			Configuration.GetOptionalConfiguration(configuration, "SystemType", out strSystemType);
-			if (strSystemType == "")
-			{
-				Logging.WriteDebugLog("Service.Start() System Type not specified, defaulting to que.");
-				strSystemType = "que";
-			}
-			else
-			{
-				strSystemType = strSystemType.ToLower().Trim();
-				if (strSystemType != "que" && strSystemType != "neo")
-				{
-					Logging.WriteDebugLog("Service.Start() System Type must be que or neo.");
-					return;
-				}
-			}
 
 			try
 			{
@@ -113,9 +96,9 @@ namespace HMX.HASSActronQue
 				return;
 			}
 
-			MQTT.StartMQTT(strMQTTBroker, bMQTTTLS, _strServiceName, strMQTTUser, strMQTTPassword, MQTTProcessor);
+			MQTT.StartMQTT(strMQTTBroker, bMQTTLogging, bMQTTTLS, _strServiceName, strMQTTUser, strMQTTPassword, MQTTProcessor);
 
-			Que.Initialise(strQueUser, strQuePassword, strQueSerial, strSystemType, iPollInterval, bPerZoneControls, bPerZoneSensors, bSeparateHeatCool, _eventStop);
+			Que.Initialise(strQueUser, strQuePassword, strQueSerial, iPollInterval, bQueLogging, bPerZoneControls, bSeparateHeatCool, _eventStop);
 
 			webHost.Run();
 		}
@@ -301,5 +284,5 @@ namespace HMX.HASSActronQue
 				}
 			}
 		}
-    }
+	}
 }
